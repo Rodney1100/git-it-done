@@ -1,24 +1,53 @@
 var issuesContainerEl = document.querySelector("#issues-container");
+var limitEl = document.getElementById("limit-warning");
+var nameOfRepo = document.getElementById("repo-name");
+
+getRepoName=()=>{
+    var queryString =  document.location.search;
+    var repoName =queryString.split('=')[1];
+    if(repoName){
+        getRepoIssues(repoName)
+        nameOfRepo.textContent = repoName
+    }else{
+document.location.replace('./index.html')
+}
+
+}
+
 
 var getRepoIssues = function (repo) {
-  console.log(repo);
-  var apiUrl = "https://api.github.com/repos/" + repo + "/issues?direction=asc";
-  fetch(apiUrl).then(function (response) {
-    if (response.ok) {
-      response.json().then(function (data) {
-        displayIssues(data);
-        console.log(data);
-      });
-    } else {
-      alert("there is a problem with your request");
+    console.log(repo);
+    var apiUrl = "https://api.github.com/repos/" + repo + "/issues?direction=asc";
+    fetch(apiUrl).then(function (response) {
+        if (response.ok) {
+            response.json().then(function (data) {
+                displayIssues(data);
+                
+                
+                if (response.headers.get("Link")) {
+                    displayWarning(repo);
+                }
+            });
+        } else {
+        document.location.replace('./index.html')
     }
   });
 };
+
+var displayWarning = function (repo) {
+  limitEl.textContent = "To see more than 30 issues, visit ";
+  var linkEl = document.createElement("a");
+  linkEl.textContent = "See More Issues on GitHub.com";
+  linkEl.setAttribute("href", "https://github.com/" + repo + "/issues");
+  linkEl.setAttribute("target", "_blank");
+
+  limitEl.appendChild(linkEl);
+};
 var displayIssues = (issues) => {
-    if (issues.length === 0) {
-        issueContainerEl.textContent = "This repo has no open issues!";
-        return;
-      }
+  if (issues.length === 0) {
+    issueContainerEl.textContent = "This repo has no open issues!";
+    return;
+  }
   for (var i = 0; i < issues.length; i++) {
     var issueEl = document.createElement("a");
     issueEl.classList = "list-item flex-row justify-space-between align-center";
@@ -42,4 +71,5 @@ var displayIssues = (issues) => {
   }
 };
 
-getRepoIssues("Rodney1100/Horiseon-challenge");
+// getRepoIssues(repoName);
+getRepoName()
